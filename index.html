@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Football Typing Game</title>
+<style>
+:root{--bg:#020816;--panel:#0c2150;--line:#2a4a8f;--blue:#1f5fd6;--gold:#f5c542;--tx:#eef3ff;--mut:#8fa4d4;--ok:#5be39a;--bad:#ff6b6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{font-size:min(1vw,1.7778vh);height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0}
+body{height:100%;background:var(--bg);color:var(--tx);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;display:grid;place-items:center;overflow:hidden;user-select:none}
+#stage{width:100rem;height:56.25rem;position:relative;overflow:hidden;border-radius:1rem;background:radial-gradient(ellipse at 50% 0%,#12358a 0%,#0a1f55 45%,#06122e 100%)}
+#stage:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 6rem,transparent 6rem 12rem);pointer-events:none}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;padding:4rem 6rem}
+.screen.on{display:flex}
+h1{font-size:4.6rem;letter-spacing:.05em;font-weight:900}
+h1 span{color:var(--gold)}
+.sub{color:var(--mut);font-size:1.7rem;margin-top:.8rem}
+.tabs{display:flex;gap:1rem;margin-top:2.4rem}
+.tab{font:inherit;font-weight:800;font-size:1.8rem;padding:.8rem 3rem;border-radius:5rem;border:.2rem solid var(--line);background:transparent;color:var(--mut);cursor:pointer}
+.tab.on{background:var(--gold);color:#101a3a;border-color:var(--gold)}
+.teams{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;margin:2rem 0 2.4rem;width:100%}
+.team{position:relative;background:var(--panel);border:.2rem solid var(--line);border-radius:1.2rem;padding:1.8rem 2rem;text-align:left;color:var(--tx);font:inherit}
+.team b{display:block;font-size:2.7rem;color:var(--gold)}
+.team .n{font-size:2rem;font-weight:700;margin-top:.3rem}
+.team .c{color:var(--mut);font-size:1.5rem;margin-top:.4rem}
+.team.ok{cursor:pointer;border-color:var(--line)}
+.team.ok:hover{border-color:var(--gold)}
+.team.sel{border-color:var(--gold);box-shadow:0 0 2rem rgba(245,197,66,.4);background:#123071}
+.team.off{opacity:.45;cursor:not-allowed}
+.team .soon{position:absolute;right:1.2rem;top:1.2rem;background:#27427f;border-radius:.6rem;padding:.3rem .8rem;font-size:1.3rem;font-weight:700}
+.btn{font:inherit;font-weight:800;font-size:2.2rem;padding:1.3rem 5rem;border:0;border-radius:5rem;background:var(--gold);color:#101a3a;cursor:pointer;transition:transform .1s;text-decoration:none;display:inline-block}
+.btn:hover{transform:scale(1.05)}
+.btn.ghost{background:transparent;color:var(--tx);border:.2rem solid var(--line)}
+.lol{position:absolute;right:2.4rem;top:2rem;font-size:1.5rem;padding:.8rem 1.8rem;z-index:2}
+.hint{color:var(--mut);font-size:1.4rem;margin-top:1.8rem}
+#play{padding-top:3rem}
+.top{display:flex;width:100%;gap:1.6rem;align-items:stretch}
+.stat{flex:1;background:var(--panel);border:.15rem solid var(--line);border-radius:1rem;padding:1rem 1.6rem;text-align:center}
+.stat small{display:block;color:var(--mut);font-size:1.3rem}
+.stat div{font-size:2.8rem;font-weight:800;font-variant-numeric:tabular-nums}
+.quit{align-self:center;font-size:1.4rem;padding:.8rem 1.6rem}
+.bar{width:100%;height:.8rem;background:var(--panel);border-radius:1rem;margin-top:1.6rem;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.card{width:100%;margin-top:3rem;background:var(--panel);border:.2rem solid var(--line);border-radius:1.6rem;padding:3rem 2rem;text-align:center}
+.card small{color:var(--mut);font-size:1.5rem}
+#tg{font-size:6rem;font-weight:900;margin:1.2rem 0 2rem;white-space:pre;min-height:8rem}
+#tg span{color:#7d90bd}#tg .ok{color:var(--ok)}#tg .bad{color:var(--bad)}#tg .cur{color:var(--gold);text-decoration:underline}
+#ty{font-size:4rem;font-weight:700;white-space:pre;min-height:6rem;border-top:.15rem dashed var(--line);padding-top:1.4rem}
+#ty .bad{color:var(--bad)}#ty .cur{text-decoration:underline;color:var(--gold)}
+.caret{display:inline-block;width:.3rem;height:4rem;background:var(--gold);vertical-align:middle;animation:b 1s steps(1) infinite}
+@keyframes b{50%{opacity:0}}
+#nx{margin-top:2.4rem;color:var(--mut);font-size:1.9rem}
+#nx b{color:var(--tx);margin:0 1rem;font-weight:600}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;width:100%;margin:3.4rem 0}
+.res .stat{padding:2rem}.res .stat div{font-size:4.2rem;color:var(--gold)}
+.ver{position:absolute;right:1.4rem;bottom:1rem;font-size:1.2rem;color:var(--mut);opacity:.8}
+</style>
+</head>
+<body>
+<div id="stage">
+ <section id="lobby" class="screen on">
+  <a class="btn ghost lol" href="https://loltyping.onrender.com/" target="_blank" rel="noopener">🎮 롤 타이핑 게임</a>
+  <h1>⚽ Football <span>Typing</span> Game</h1>
+  <p class="sub">팀을 선택하고 축구선수 이름을 순서대로 입력하세요</p>
+  <div class="tabs"><button class="tab on" id="tabClub">클럽팀</button><button class="tab" id="tabNat">국대팀</button></div>
+  <div class="teams" id="teams"></div>
+  <button class="btn" id="go">게임 시작</button>
+  <p class="hint">이름을 다 쓰고 Enter 또는 Space로 다음 선수 · 백스페이스 1회 = 오타 1회 · 첫 타이핑부터 측정 시작</p>
+ </section>
+ <section id="play" class="screen">
+  <div class="top">
+   <button class="btn ghost quit" id="quit">← 나가기</button>
+   <div class="stat"><small>시간</small><div id="sT">0.0s</div></div>
+   <div class="stat"><small>타수 (타/분)</small><div id="sC">0</div></div>
+   <div class="stat"><small>오타</small><div id="sE">0</div></div>
+   <div class="stat"><small>진행</small><div id="sP">0 / 0</div></div>
+  </div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="card"><small id="tl"></small><div id="tg"></div><div id="ty"></div></div>
+  <div id="nx"></div>
+ </section>
+ <section id="result" class="screen">
+  <h1>🏆 <span>결과</span></h1>
+  <p class="sub" id="rs"></p>
+  <div class="res" id="res"></div>
+  <div style="display:flex;gap:1.6rem"><button class="btn" id="again">다시 하기</button><button class="btn ghost" id="home">홈으로</button></div>
+ </section>
+ <div class="ver">v1.0</div>
+</div>
+<script>
+const ROSTER={
+chelsea:"케파 아리사발라가,안토니오 뤼디거,마르코스 알론소,안드레아스 크리스텐센,조르지뉴,티아고 실바,은골로 캉테,태미 에이브러햄,크리스천 풀리식,티모 베르너,윌리 카바예로,커트 주마,에두아르 멘디,마테오 코바치치,올리비에 지루,메이슨 마운트,칼럼 허드슨 오도이,벤 칠웰,하킴 지예흐,빌리 길모어,리스 제임스,세사르 아스필리쿠에타,카이 하베르츠,에메르송,티노 안조린,프랭크 램파드,토마스 투헬".split(","),
+real:"티보 쿠르투아,다니 카르바할,에데르 밀리탕,다비드 알라바,헤수스 바예호,나초 페르난데스,에덴 아자르,토니 크로스,카림 벤제마,루카 모드리치,마르코 아센시오,마르셀루,안드리 루닌,카세미루,페데리코 발베르데,루카 요비치,루카스 바스케스,가레스 베일,다니 세바요스,비니시우스 주니오르,호드리구,이스코,페를랑 멘디,마리아노 디아스,에두아르도 카마빙가,카를로 안첼로티".split(","),
+city:"카일 워커,후뱅 디아스,칼빈 필립스,존 스톤스,네이선 아케,주앙 칸셀루,일카이 귄도안,엘링 홀란드,잭 그릴리시,에므리크 라포르트,로드리,케빈 더 브라위너,슈테판 오르테가,훌리안 알바레스,베르나르두 실바,세르히오 고메스,마누엘 아칸지,리야드 마레즈,에데르송,막시모 페로네,스콧 카슨,필 포든,콜 파머,리코 루이스,조쉬 윌슨 에스브랜드,펩 과르디올라".split(","),
+luton:"제임스 셰이,가브리엘 오쇼,톰 로키어,매즈 유엘 안데르센,로스 바클리,치도지 오그베네,칼튼 모리스,컬리 우드로우,일라이저 아데바요,마블러스 나캄바,타히트 총,테뎅 멘지,리스 버크,펠리 러독 음판주,조던 클라크,제이콥 브라운,팀 크륄,토마시 카민스키,하시오카 다이키,아마리 벨,안드로스 타운젠드,알피 다우티,롭 에드워즈".split(","),
+psg:"잔루이지 돈나룸마,아슈라프 하키미,프레스넬 킴펨베,마르퀴뇨스,흐비차 크바라츠헬리아,파비안 루이스,곤살로 하무스,우스만 뎀벨레,데지레 두에,비티냐,이강인,루카스 에르난데스,세니 마율루,누누 멘데스,브래들리 바르콜라,워렌 자이르 에메리,루카스 베랄두,아이만 카리,마트베이 사포노프,요람 자그,나우펠 엘 하나스,이브라힘 음바예,윌리안 파초,아르나우 테나스,주앙 네베스,루이스 엔리케".split(","),
+suwon:"김민준,모경빈,송주훈,고종현,임지훈,페신,킬런 르본,이스나이루 헤이스,이준재,여민준,정호연,정성민,박현빈,강현묵,최지묵,김성주,홍정호,양형모,강성진,김민우,고승범,이건희,윤근영,김준홍,이경준,정동윤,박대원,김주찬,이준우,홍상원,브루노 실바,한현서,루이스 미나,김지호,김지현,김지성,김결,이상민,에드가라스 두비츠카스,김도연,이정효".split(","),
+por:"후이 파트리시우,브루노 알베스,페페,주제 폰테,하파엘 게헤이루,히카르두 카르발류,크리스티아누 호날두,주앙 무티뉴,에데르,주앙 마리우,비에이리냐,안토니 로페스,다닐루 페레이라,윌리엄 카르발류,안드레 고메스,헤나투 산체스,나니,하파 실바,엘리제우,히카르두 콰레스마,세드리크,에두아르두 카르발류,아드리엔 실바,페르난두 산투스".split(","),
+fra:"위고 요리스,뱅자맹 파바르,프레스넬 킴펨베,라파엘 바란,사무엘 움티티,폴 포그바,앙투안 그리즈만,토마스 르마,올리비에 지루,킬리안 음바페,우스만 뎀벨레,코랑탱 톨리소,은골로 캉테,블레즈 마튀이디,스티븐 은존지,스티브 만단다,아딜 라미,나빌 페키르,지브릴 시디베,플로리앙 토뱅,루카스 에르난데스,뱅자맹 멘디,디디에 데샹".split(","),
+ita:"살바토레 시리구,조반니 디 로렌초,조르조 키엘리니,레오나르도 스피나촐라,마누엘 로카텔리,마르코 베라티,가에타노 카스트로빌리,조르지뉴,안드레아 벨로티,로렌초 인시녜,도메니코 베라르디,마테오 페시나,에메르송,페데리코 키에사,프란체스코 아체르비,브라얀 크리스탄테,치로 임모빌레,니콜로 바렐라,레오나르도 보누치,페데리코 베르나르데스키,잔루이지 돈나룸마,자코모 라스파도리,알레산드로 바스토니,알레산드로 플로렌치,하파엘 톨로이,알렉스 메렛,로베르토 만치니".split(","),
+arg:"프랑코 아르마니,후안 포이스,니콜라스 탈리아피코,곤살로 몬티엘,레안드로 파레데스,헤르만 페첼라,로드리고 데 폴,마르코스 아쿠냐,훌리안 알바레스,리오넬 메시,앙헬 디 마리아,헤로니모 루이,크리스티안 로메로,에세키엘 팔라시오스,앙헬 코레아,티아고 알마다,파푸 고메스,귀도 로드리게스,니콜라스 오타멘디,알렉시스 맥 알리스터,파올로 디발라,라우타로 마르티네스,에밀리아노 마르티네스,엔소 페르난데스,리산드로 마르티네스,나우엘 몰리나,리오넬 스칼로니".split(","),
+eng:"조던 픽포드,카일 워커,루크 쇼,데클란 라이스,존 스톤스,마크 게히,부카요 사카,트렌트 알렉산더 아놀드,해리 케인,주드 벨링엄,필 포든,키어런 트리피어,애런 램즈데일,에즈리 콘사,루이스 덩크,코너 갤러거,아이반 토니,앤서니 고든,올리 왓킨스,재러드 보웬,에베리치 에제,조 고메스,딘 헨더슨,콜 파머,애덤 워튼,코비 마이누,가레스 사우스게이트".split(","),
+spain:"다비드 라야,마르크 푸빌,알레한드로 그리말도,에릭 가르시아,마르코스 요렌테,미켈 메리노,페란 토레스,파비안 루이스,가비,다니 올모,예레미 피노,페드로 포로,주안 가르시아,에므리크 라포르트,알렉스 바에나,로드리,니코 윌리암스,마르틴 수비멘디,라민 야말,페드리,미켈 오야르사발,파우 쿠바르시,우나이 시몬,마르크 쿠쿠렐랴,빅토르 무뇨스,보르하 이글레시아스,루이스 데 라 푸엔테".split(",")};
+// [연도, 팀명, 감독, 로스터키]  (로스터키 없으면 Coming Soon!)
+const TEAMS={
+club:[["2021","첼시","램파드, 투헬","chelsea"],["2022","레알 마드리드","안첼로티","real"],["2023","맨체스터 시티","펩","city"],["2024","루턴 타운","롭 에드워즈","luton"],["2025","파리 생제르맹","엔리케","psg"],["2026","수원 삼성 블루윙즈","이정효","suwon"]],
+nat:[["2016","포르투갈","산투스","por"],["2018","프랑스","데샹","fra"],["2020","이탈리아","만치니","ita"],["2022","아르헨티나","스칼로니","arg"],["2024","잉글랜드","사우스게이트","eng"],["2026","스페인","데 라 푸엔테","spain"]]};
+const $=id=>document.getElementById(id);
+let tab="club",sel="chelsea",NAMES=ROSTER.chelsea,label="2021 첼시";
+function renderTeams(){
+ $("teams").innerHTML=TEAMS[tab].map((t,i)=>`<div class="team ${t[3]?(t[3]===sel?'ok sel':'ok'):'off'}" data-i="${i}"><b>${t[0]}</b><div class="n">${t[1]}</div><div class="c">with ${t[2]}</div>${t[3]?'':'<span class="soon">Coming Soon!</span>'}</div>`).join("");
+ $("tabClub").classList.toggle("on",tab==="club");$("tabNat").classList.toggle("on",tab==="nat");
+}
+$("teams").onclick=e=>{
+ const d=e.target.closest(".team.ok");if(!d)return;
+ const t=TEAMS[tab][d.dataset.i];sel=t[3];label=t[0]+" "+t[1];renderTeams();
+};
+$("tabClub").onclick=()=>{tab="club";renderTeams()};
+$("tabNat").onclick=()=>{tab="nat";renderTeams()};
+renderTeams();
+
+// ---- 한글 조합기 (물리 키 기반 두벌식) ----
+const K={KeyQ:"ㅂㅃ",KeyW:"ㅈㅉ",KeyE:"ㄷㄸ",KeyR:"ㄱㄲ",KeyT:"ㅅㅆ",KeyY:"ㅛ",KeyU:"ㅕ",KeyI:"ㅑ",KeyO:"ㅐㅒ",KeyP:"ㅔㅖ",KeyA:"ㅁ",KeyS:"ㄴ",KeyD:"ㅇ",KeyF:"ㄹ",KeyG:"ㅎ",KeyH:"ㅗ",KeyJ:"ㅓ",KeyK:"ㅏ",KeyL:"ㅣ",KeyZ:"ㅋ",KeyX:"ㅌ",KeyC:"ㅊ",KeyV:"ㅍ",KeyB:"ㅠ",KeyN:"ㅜ",KeyM:"ㅡ"};
+const L=[..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"],V=[..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"],T=["",..."ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ"];
+const VC={"ㅗㅏ":"ㅘ","ㅗㅐ":"ㅙ","ㅗㅣ":"ㅚ","ㅜㅓ":"ㅝ","ㅜㅔ":"ㅞ","ㅜㅣ":"ㅟ","ㅡㅣ":"ㅢ"};
+const TC={"ㄱㅅ":"ㄳ","ㄴㅈ":"ㄵ","ㄴㅎ":"ㄶ","ㄹㄱ":"ㄺ","ㄹㅁ":"ㄻ","ㄹㅂ":"ㄼ","ㄹㅅ":"ㄽ","ㄹㅌ":"ㄾ","ㄹㅍ":"ㄿ","ㄹㅎ":"ㅀ","ㅂㅅ":"ㅄ"};
+const TS={};for(const k in TC)TS[TC[k]]=[k[0],k[1]];
+let cm,l,v,t;
+const rend=()=>!l&&!v?"":!v?l:!l?v:String.fromCharCode(0xAC00+(L.indexOf(l)*21+V.indexOf(v))*28+T.indexOf(t));
+const commit=()=>{cm+=rend();l=v=null;t=""};
+const reset=()=>{cm="";l=v=null;t=""};
+function put(j){
+ if(L.includes(j)||T.includes(j)){
+  if(!l&&!v)l=j;
+  else if(!v||!l){commit();l=j}
+  else if(!t){if(T.includes(j))t=j;else{commit();l=j}}
+  else{const c=TC[t+j];if(c)t=c;else{commit();l=j}}
+ }else{
+  if(!v)v=j;
+  else if(!t){const c=VC[v+j];if(c)v=c;else{commit();v=j}}
+  else{let b;if(TS[t]){b=TS[t][1];t=TS[t][0]}else{b=t;t=""}commit();l=b;v=j}
+ }
+}
+
+// ---- 게임 상태 ----
+let scr="lobby",idx=0,keys=0,typos=0,st=0,iv=0,target="";
+const show=s=>{scr=s;["lobby","play","result"].forEach(x=>$(x).classList.toggle("on",x===s));document.activeElement&&document.activeElement.blur()};
+const txt=()=>cm+rend();
+function start(){
+ NAMES=ROSTER[sel];
+ idx=0;keys=0;typos=0;st=0;clearInterval(iv);reset();
+ $("tl").textContent=label;
+ $("sT").textContent="0.0s";$("sC").textContent="0";$("sE").textContent="0";
+ show("play");draw();
+}
+function tick(){
+ const e=(performance.now()-st)/1000;
+ $("sT").textContent=e.toFixed(1)+"s";
+ $("sC").textContent=e>=1?Math.round(keys/e*60):0;
+}
+function begin(){if(!st){st=performance.now();iv=setInterval(tick,100)}}
+function draw(){
+ target=NAMES[idx];const tx=txt(),comp=rend()?tx.length-1:-1;
+ $("tg").innerHTML=[...target].map((c,i)=>{const x=tx[i];const k=x===undefined?"":x===c?"ok":i===comp?"cur":"bad";return `<span class="${k}">${c===" "?"&nbsp;":c}</span>`}).join("");
+ $("ty").innerHTML=[...tx].map((c,i)=>{const k=i===comp&&c!==target[i]?"cur":c!==target[i]?"bad":"";return `<span class="${k}">${c===" "?" ":c}</span>`}).join("")+'<span class="caret"></span>';
+ $("sE").textContent=typos;$("sP").textContent=idx+" / "+NAMES.length;
+ $("pb").style.width=idx/NAMES.length*100+"%";
+ $("nx").innerHTML=NAMES.length-idx>1?"다음 → "+NAMES.slice(idx+1,idx+4).map(n=>`<b>${n}</b>`).join(""):"마지막 선수입니다!";
+}
+function next(){
+ idx++;reset();
+ if(idx>=NAMES.length)finish();else draw();
+}
+function finish(){
+ const sec=(performance.now()-st)/1000,n=NAMES.length;clearInterval(iv);
+ const cpm=Math.round(keys/sec*60),acc=Math.max(0,(keys-typos)/keys*100);
+ const box=(a,b)=>`<div class="stat"><small>${a}</small><div>${b}</div></div>`;
+ $("rs").textContent=label+" · "+n+"명 완주!";
+ $("res").innerHTML=box("총 시간",sec.toFixed(1)+"초")+box("평균 타수",cpm+" 타/분")+box("총 타수",keys+"타")+box("오타",typos+"회")+box("정확도",acc.toFixed(1)+"%")+box("완주",n+" / "+n);
+ show("result");
+}
+// 백스페이스: 조합 중인 글자는 통째로, 아니면 완성된 글자 1개 삭제. 지울 것이 있을 때만 오타 1회
+function back(){
+ if(!txt())return;
+ if(l||v)l=v=null,t="";else cm=cm.slice(0,-1);
+ typos++;draw();
+}
+document.addEventListener("keydown",e=>{
+ if(scr==="lobby"&&e.code==="Enter"){start();return}
+ if(scr!=="play"||e.ctrlKey||e.metaKey||e.altKey)return;
+ if(e.code==="Escape"){e.preventDefault();clearInterval(iv);show("lobby");return}
+ if(e.code==="Backspace"){e.preventDefault();back();return}
+ if(e.code==="Enter"||e.code==="NumpadEnter"){e.preventDefault();if(!e.repeat&&txt()===target){begin();next()}return}
+ if(e.code==="Space"){
+  e.preventDefault();if(e.repeat)return;begin();keys++;
+  if(txt()===target)next();else{commit();cm+=" ";draw()}
+  return;
+ }
+ const k=K[e.code];
+ if(k){e.preventDefault();begin();keys++;put(e.shiftKey&&k[1]?k[1]:k[0]);draw()}
+});
+$("go").onclick=start;$("again").onclick=start;
+$("quit").onclick=()=>{clearInterval(iv);show("lobby")};
+$("home").onclick=()=>show("lobby");
+</script>
+</body>
+</html>
